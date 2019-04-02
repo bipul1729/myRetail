@@ -4,7 +4,9 @@
 # ~~~~
 
 # An example controller showing a sample home page
-GET     /                           com.myretail.controllers.HomeController.index
+GET     /                                      com.myretail.controllers.HomeController.index
+GET     /products/:id                          com.myretail.controllers.ProductController.getById(id:Int)
+PUT     /products/:id                          com.myretail.controllers.ProductController.getById(id:Int)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
