@@ -6,7 +6,7 @@ version := "1.0-SNAPSHOT"
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
 scalaVersion := "2.12.8"
-
+libraryDependencies += ws
 libraryDependencies += guice
 libraryDependencies += "org.reactivemongo" %% "play2-reactivemongo" % "0.16.5-play27"
 libraryDependencies += "net.codingwell" %% "scala-guice" % "4.2.3"
