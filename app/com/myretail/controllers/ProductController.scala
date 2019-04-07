@@ -1,5 +1,6 @@
 package com.myretail.controllers
 
+import com.myretail.external.api.TargetApi
 import com.myretail.forms.ProductForm
 import com.myretail.models.ProductItem
 import com.myretail.services.ProductService
@@ -11,17 +12,27 @@ import play.api.mvc.{AbstractController, AnyContent, ControllerComponents, Reque
 import scala.concurrent.{ExecutionContext, Future}
 
 class ProductController @Inject()(cc: ControllerComponents,
-                                  productService: ProductService)(implicit ec: ExecutionContext) extends AbstractController(cc) {
+                                  productService: ProductService,
+                                  targetApi:TargetApi)(implicit ec: ExecutionContext) extends AbstractController(cc) {
 
   val logger = Logger(this.getClass)
 
   def getById(id: Int) = Action.async { implicit request=>
-    productService.getProductById(id)
-      .map(x =>Ok(Json.toJson(x)))
-      .recover{
-        case ex:IllegalArgumentException => Ok(Json.toJson(ex.getMessage))
-        case ex:Exception => Ok(Json.toJson(ex.getMessage))
+
+    val cll = com.myretail.controllers.routes.MockTitleController.getById(id)
+    targetApi.getProductTitleMock(id,cll.absoluteURL()).flatMap { name =>
+      productService.getPriceById(id)
+        .map { x =>
+          val pItem = ProductItem(id, name, x.current_price)
+          Ok(Json.toJson(pItem))
+        }.recover {
+        case ex: IllegalArgumentException => Ok(Json.toJson(ex.getMessage))
+        case ex: Exception => Ok(Json.toJson(ex.getMessage))
       }
+    }.recover{
+      case ex:IllegalArgumentException => Ok(Json.toJson(ex.getMessage))
+      case ex:Exception => Ok(Json.toJson(ex.getMessage))
+    }
   }
 
   def updateProductPriceById(id: Int) = Action.async((parse.json)) { implicit request=>
@@ -30,9 +41,9 @@ class ProductController @Inject()(cc: ControllerComponents,
         Future(BadRequest(Json.toJson(s"Invalid product field in Update form ${errors}")))
       }, {
         pf => {
-          val futureOptionArtifact = productService.updateProductPrice(id, pf)
-          futureOptionArtifact.map(x=> Created(Json.toJson(x))
-            ).recover {
+          productService.updateProductPrice(id, pf)
+         .map(x=> Created(Json.toJson(x)))
+            .recover {
             case ex: Exception => Ok(Json.toJson(ex.getMessage))
           }
         }

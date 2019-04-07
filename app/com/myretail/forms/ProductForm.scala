@@ -7,3 +7,10 @@ case class ProductForm(id:Option[Int] = None, name:Option[String] = None, curren
 object ProductForm {
   implicit val ProductFormFormat: Format[ProductForm] = Json.format[ProductForm]
 }
+
+
+
+case class ProductTitleForm(id:Option[Int] = None, name:String)
+object ProductTitleForm {
+  implicit val productTitleFormFormat: Format[ProductTitleForm] = Json.format[ProductTitleForm]
+}
